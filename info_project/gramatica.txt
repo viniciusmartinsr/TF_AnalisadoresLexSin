@@ -1,0 +1,77 @@
+Grmática Implementada da Linguagem ObsAct :
+1. Estrutura Geral
+PROGRAM → DEV_SEC CMD_SEC
+
+2. Declaração de Dispositivos
+DEV_SEC   →  dispositivos ":" DEV_LIST fimdispositivos
+
+DEV_LIST  →  DEVICE DEV_LIST
+DEV_LIST  →  DEVICE
+
+DEVICE    →  ID_DEVICE
+DEVICE    →  ID_DEVICE "[" ID_OBS "]"
+
+3. Seção de Comandos
+CMD_SEC   →  CMD_LIST
+
+CMD_LIST  →  CMD CMD_LIST
+CMD_LIST  →  CMD
+
+4. Comandos
+CMD       →  ATTRIB
+CMD       →  OBSACT
+CMD       →  ACT ";"
+
+5. Atribuições
+ATTRIB    →  def ID_OBS "=" VAL ";"
+
+6. Condições (Observações)
+OBS       →  COND
+OBS       →  COND AND OBS
+
+COND      →  ID_OBS OP_LOGIC VAL
+COND      →  "(" OBS ")"        (expressão parentizada opcional)
+
+7. Valores
+VAL       →  NUM
+VAL       →  BOOL
+
+8. Estruturas Condicionais ObsAct
+OBSACT    →  quando OBS ":" ACT_LIST
+OBSACT    →  quando OBS ":" ACT_LIST senao ACT_LIST
+
+9. Lista de Ações em Blocos
+ACT_LIST  →  ACT ";" ACT_LIST
+ACT_LIST  →  ACT ";"
+
+10. Ações
+
+10.1 Execute
+(Duas formas aceitas, conforme exemplos do enunciado)
+
+ACT       →  execute ACTION em ID_DEVICE
+ACT       →  execute ACTION ID_DEVICE
+
+10.2 Alerta
+ACT       →  alerta para ID_DEVICE ":" MSG
+ACT       →  alerta para ID_DEVICE ":" MSG "," VAR_LIST
+
+
+Lista de variáveis:
+
+VAR_LIST  →  ID_OBS
+VAR_LIST  →  ID_OBS "," VAR_LIST
+
+10.3 Difundir
+ACT       →  difundir ":" MSG           -> "[" DEV_LIST_N "]"
+ACT       →  difundir ":" MSG ID_OBS    -> "[" DEV_LIST_N "]"
+
+
+Lista de dispositivos:
+
+DEV_LIST_N →  ID_DEVICE
+DEV_LIST_N →  ID_DEVICE "," DEV_LIST_N
+
+10.4 Ações primitivas
+ACTION    →  "ligar"
+ACTION    →  "desligar"

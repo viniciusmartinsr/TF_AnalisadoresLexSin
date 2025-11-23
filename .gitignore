@@ -1,0 +1,31 @@
+# ambiente virtual
+venv/
+.env/
+.venv/
+
+# caches do python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# arquivos gerados pelo compilador obsact
+out/*.c
+out/*.exe
+out/*.o
+
+# logs
+*.log
+
+# vscode / pycharm
+.vscode/
+.idea/
+
+# arquivos temporários
+*.tmp
+*.swp
+.DS_Store
+
+# backups
+*.bak
+*~

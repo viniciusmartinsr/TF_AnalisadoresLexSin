@@ -1,6 +1,7 @@
 # main.py
-from lexer import ObsLexer
-from parser import ObsParser
+from obs_lexer import ObsLexer
+from obs_parser import ObsParser
+
 from translator import translate
 
 import sys

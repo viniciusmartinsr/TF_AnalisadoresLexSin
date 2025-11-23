@@ -1,0 +1,36 @@
+Laura - Commit 23/11:
+- ID_OBS é mais geral, mas reconhecido antes → prioridade correta
+- ID_DEVICE captura apenas nomes válidos para dispositivos
+- Palavras reservadas foram centralizadas e padronizadas
+- Expressões como "msg" continuam funcionando
+- Variáveis como temperatura1, mov_ativo, umidadeSensor são ID_OBS
+- Dispositivos como Lampada, A, Monitor, Ventilador são ID_DEVICE
+- Conflitos e ambiguidades tratadas
+- não está rodando:
+WARNING: 3 shift/reduce conflicts
+caractere ilegal: '
+'
+sly: Syntax error at line 1, token=ID_OBS
+caractere ilegal: '
+'
+caractere ilegal: '
+'
+caractere ilegal: '
+'
+caractere ilegal: '
+'
+caractere ilegal: '='
+caractere ilegal: '
+'
+caractere ilegal: '
+'
+caractere ilegal: '
+'
+caractere ilegal: '
+'
+Traceback (most recent call last):
+  File "C:\Users\Laura\Downloads\Faculdade\25.2\analisadores\TF_AnalisadoresLexSin\main.py", line 20, in <module>
+    c_code = translate(ast)
+  File "C:\Users\Laura\Downloads\Faculdade\25.2\analisadores\TF_AnalisadoresLexSin\translator.py", line 22, in translate
+    for cmd in program.commands:
+AttributeError: 'NoneType' object has no attribute 'commands'

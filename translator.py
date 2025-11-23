@@ -1,53 +1,69 @@
-'''Recebe a AST e gera código C.
+from ast_nodes import (
+    ExecuteAction,
+    AlertAction,
+    BroadcastAction,
+    WhenStmt,
+    AttributeDef,
+)
 
-Cria main()
-
-Declara variáveis
-
-Traduz comandos ObsAct → C
-
-Gera chamadas para ligar, desligar, alerta, etc.
-
-Concatena MSG e ID_OBS quando necessário.'''
-
-# translator.py
 
 def translate(program):
+
     c = []
 
+    # cabeçalhos básicos
     c.append('#include <stdio.h>')
     c.append('#include "runtime.c"\n')
 
     c.append("int main() {")
 
-    # Declarar atributos
+    # declarar variáveis definidas com def
+    defined_vars = set()
     for cmd in program.commands:
-        from ast_nodes import AttributeDef
         if isinstance(cmd, AttributeDef):
+            defined_vars.add(cmd.name)
             c.append(f"    int {cmd.name} = {cmd.value.value};")
+
+    # inicializar sensores não declarados (pdf exige valor 0)
+    for dev in program.devices:
+        if dev.obs and dev.obs not in defined_vars:
+            c.append(f"    int {dev.obs} = 0;")
 
     c.append("")
 
-    # Traduzir comandos
+    # traduz cada comando
     for cmd in program.commands:
         code = translate_cmd(cmd)
         if code:
-            c.append("    " + code)
+            for line in code.split("\n"):
+                c.append("    " + line)
 
     c.append("    return 0;")
     c.append("}")
     return "\n".join(c)
 
 
+
+# traduz um comando único
 def translate_cmd(cmd):
-    from ast_nodes import ExecuteAction, AlertAction, BroadcastAction, WhenStmt
 
     if isinstance(cmd, ExecuteAction):
         return f'{cmd.action}("{cmd.device}");'
 
     if isinstance(cmd, AlertAction):
+
+        # lista de variáveis
+        if isinstance(cmd.var, list):
+            calls = []
+            for v in cmd.var:
+                calls.append(f'alerta("{cmd.device}", "{cmd.msg}", {v});')
+            return "\n".join(calls)
+
+        # alerta com uma única variável
         if cmd.var:
             return f'alerta("{cmd.device}", "{cmd.msg}", {cmd.var});'
+
+        # alerta simples
         return f'alerta("{cmd.device}", "{cmd.msg}");'
 
     if isinstance(cmd, BroadcastAction):
@@ -57,18 +73,34 @@ def translate_cmd(cmd):
                 calls.append(f'alerta("{d}", "{cmd.msg}", {cmd.var});')
             else:
                 calls.append(f'alerta("{d}", "{cmd.msg}");')
-        return "\n    ".join(calls)
+        return "\n".join(calls)
 
     if isinstance(cmd, WhenStmt):
         cond = translate_condition(cmd.condition)
-        code = f"if ({cond}) {{\n        {translate_cmd(cmd.act_true)}\n    }}"
+        true_block = translate_act_list(cmd.act_true)
+        code = f"if ({cond}) {{\n{true_block}\n    }}"
+
         if cmd.act_false:
-            code += f" else {{\n        {translate_cmd(cmd.act_false)}\n    }}"
+            false_block = translate_act_list(cmd.act_false)
+            code += f" else {{\n{false_block}\n    }}"
+
         return code
 
     return None
 
 
+
+# traduz lista de ações
+def translate_act_list(actions):
+    lines = []
+    for act in actions:
+        translated = translate_cmd(act)
+        for l in translated.split("\n"):
+            lines.append(f"        {l}")
+    return "\n".join(lines)
+
+
+# traduz condição com encadeamento and
 def translate_condition(cond):
     if cond.next_cond:
         return f"({cond.left} {cond.op} {cond.right.value}) && {translate_condition(cond.next_cond)}"
