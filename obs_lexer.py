@@ -1,50 +1,41 @@
+# obs_lexer.py
 from sly import Lexer
 
 class ObsLexer(Lexer):
-
-    # tokens
-    tokens = {
-        ID_DEVICE, ID_OBS, NUM, BOOL, MSG,
-        OP_LOGIC, AND,
-        DEF, QUANDO, EXECUTE, EM, ALERTA, PARA,
-        DIFUNDIR, SETA, FIMDISPOSITIVOS, DISPOSITIVOS,
-        SENAO, LIGAR, DESLIGAR
+    # Mapa de palavras reservadas
+    # Isso garante que "dispositivos" seja lido como token DISPOSITIVOS e não como ID
+    keywords = {
+        'dispositivos': 'DISPOSITIVOS',
+        'fimdispositivos': 'FIMDISPOSITIVOS',
+        'def': 'DEF',
+        'quando': 'QUANDO',
+        'execute': 'EXECUTE',
+        'em': 'EM',
+        'alerta': 'ALERTA',
+        'para': 'PARA',
+        'difundir': 'DIFUNDIR',
+        'senao': 'SENAO',
+        'AND': 'AND',
+        'ligar': 'LIGAR',
+        'desligar': 'DESLIGAR'
     }
 
-    # ignore all whitespace including NEWLINE
-    ignore = ' \t\r\n'
+    # Conjunto de tokens
+    tokens = {
+        ID, NUM, BOOL, MSG,
+        OP_LOGIC, SETA,
+        *keywords.values()
+    }
 
-    # ignore comments
+    ignore = ' \t\r\n'
     ignore_comment = r'//.*'
 
-    # ---------------------------------------------------------
-    # KEYWORDS (precedência ANTES dos identificadores)
-    # ---------------------------------------------------------
-    DISPOSITIVOS    = r'dispositivos'
-    FIMDISPOSITIVOS = r'fimdispositivos'
-    DEF             = r'def'
-    QUANDO          = r'quando'
-    EXECUTE         = r'execute'
-    EM              = r'em'
-    ALERTA          = r'alerta'
-    PARA            = r'para'
-    DIFUNDIR        = r'difundir'
-    SENAO           = r'senao'
-    AND             = r'AND'
-    LIGAR           = r'ligar'
-    DESLIGAR        = r'desligar'
+    # Literais (IMPORTANTE: adicionei o '=')
+    literals = { '[', ']', ':', ';', ',', '(', ')', '=' }
 
-    # ---------------------------------------------------------
-    # OPERADORES E SÍMBOLOS
-    # ---------------------------------------------------------
     OP_LOGIC = r'(>=|<=|==|!=|>|<)'
     SETA     = r'->'
 
-    literals = { '[', ']', ':', ';', ',', '(', ')' }
-
-    # ---------------------------------------------------------
-    # VALORES
-    # ---------------------------------------------------------
     @_(r'True|False')
     def BOOL(self, t):
         t.value = (t.value == "True")
@@ -60,23 +51,13 @@ class ObsLexer(Lexer):
         t.value = t.value.strip('"')
         return t
 
-    # ---------------------------------------------------------
-    # IDENTIFICADORES — ORDEM IMPORTA!
-    # ---------------------------------------------------------
-
-    # MAIS GERAL → vem ANTES
-    @_(r'[A-Za-z][A-Za-z0-9_]*')
-    def ID_OBS(self, t):
+    # Identificador Genérico
+    # Captura o texto e verifica se é uma keyword. Se for, muda o tipo do token.
+    @_(r'[a-zA-Z][a-zA-Z0-9_]*')
+    def ID(self, t):
+        t.type = self.keywords.get(t.value, 'ID')
         return t
 
-    # MAIS RESTRITIVO → vem DEPOIS
-    @_(r'[A-Za-z]+')
-    def ID_DEVICE(self, t):
-        return t
-
-    # ---------------------------------------------------------
-    # ERRO LÉXICO
-    # ---------------------------------------------------------
     def error(self, t):
-        print(f"caractere ilegal: '{t.value[0]}'")
+        print(f"Linha {t.lineno}: caractere ilegal '{t.value[0]}'")
         self.index += 1
