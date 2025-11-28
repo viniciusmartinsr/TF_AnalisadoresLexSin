@@ -61,7 +61,7 @@ def translate_cmd(cmd):
 
         # alerta com uma única variável
         if cmd.var:
-            return f'alerta("{cmd.device}", "{cmd.msg}", {cmd.var});'
+            return f'alerta_var("{cmd.device}", "{cmd.msg}", {cmd.var});'
 
         # alerta simples
         return f'alerta("{cmd.device}", "{cmd.msg}");'
@@ -70,7 +70,7 @@ def translate_cmd(cmd):
         calls = []
         for d in cmd.dev_list:
             if cmd.var:
-                calls.append(f'alerta("{d}", "{cmd.msg}", {cmd.var});')
+                calls.append(f'alerta_var("{d}", "{cmd.msg}", {cmd.var});')
             else:
                 calls.append(f'alerta("{d}", "{cmd.msg}");')
         return "\n".join(calls)
