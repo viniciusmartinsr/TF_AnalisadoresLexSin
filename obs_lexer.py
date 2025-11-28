@@ -30,7 +30,6 @@ class ObsLexer(Lexer):
     ignore = ' \t\r\n'
     ignore_comment = r'//.*'
 
-    # Literais (IMPORTANTE: adicionei o '=')
     literals = { '[', ']', ':', ';', ',', '(', ')', '=' }
 
     OP_LOGIC = r'(>=|<=|==|!=|>|<)'
@@ -48,7 +47,8 @@ class ObsLexer(Lexer):
 
     @_(r'"[^"]*"')
     def MSG(self, t):
-        t.value = t.value.strip('"')
+        val = t.value[1:-1]
+        t.value = val.replace('\n', ' ').replace('\r', '')
         return t
 
     # Identificador Genérico

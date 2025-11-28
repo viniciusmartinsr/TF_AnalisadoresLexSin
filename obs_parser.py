@@ -29,7 +29,7 @@ class ObsParser(Parser):
     def dev_list(self, p):
         return [p.device]
 
-    # Regra unificada usando ID (o Lexer decide se é Device ou Obs pelo contexto não ser palavra reservada)
+    # Regra unificada usando ID (o Lexer decide se é Device ou Obs pelo contexto)
     @_('ID')
     def device(self, p):
         return ast.Device(p.ID)
@@ -113,12 +113,27 @@ class ObsParser(Parser):
         # p.act_list0 é o bloco TRUE, p.act_list1 é o bloco FALSE (SENAO)
         return ast.WhenStmt(p.obs, p.act_list0, p.act_list1)
 
-    # Bloco de ações
+    # ----------------------------------------------------------------------
+    # BLOCO DE AÇÕES (MODIFICADO PARA FLEXIBILIDADE DE ;)
+    # ----------------------------------------------------------------------
+    
+    # 1. Ação com ; seguida de mais ações
     @_('act ";" act_list')
     def act_list(self, p):
         return [p.act] + p.act_list
 
+    # 2. Ação SEM ; seguida de mais ações (Permite escrever em várias linhas sem ;)
+    @_('act act_list')
+    def act_list(self, p):
+        return [p.act] + p.act_list
+
+    # 3. Última ação com ;
     @_('act ";"')
+    def act_list(self, p):
+        return [p.act]
+
+    # 4. Última ação SEM ; (Permite terminar bloco ou anteceder SENAO sem ;)
+    @_('act')
     def act_list(self, p):
         return [p.act]
 
