@@ -1,6 +1,6 @@
 dispositivos:
-    Termometro [temperatura]
-    Ventilador
+Termometro[temperatura]
+Ventilador
 fimdispositivos
 
 def temperatura = 40;

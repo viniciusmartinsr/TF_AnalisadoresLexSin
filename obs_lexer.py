@@ -1,9 +1,8 @@
-
 from sly import Lexer
 
 class ObsLexer(Lexer):
 
-    # lista completa de tokens
+    # tokens
     tokens = {
         ID_DEVICE, ID_OBS, NUM, BOOL, MSG,
         OP_LOGIC, AND,
@@ -12,15 +11,15 @@ class ObsLexer(Lexer):
         SENAO, LIGAR, DESLIGAR
     }
 
-    # ignorar espaços, tabs e carriage return (\r)
-    ignore = ' \t\r'
+    # ignore all whitespace including NEWLINE
+    ignore = ' \t\r\n'
 
-    # ignorar comentários // até o fim da linha
+    # ignore comments
     ignore_comment = r'//.*'
 
-    # ----------------------------------------------------------------------
-    # palavras reservadas — sly prioriza estas regras ANTES de id_obs
-    # ----------------------------------------------------------------------
+    # ---------------------------------------------------------
+    # KEYWORDS (precedência ANTES dos identificadores)
+    # ---------------------------------------------------------
     DISPOSITIVOS    = r'dispositivos'
     FIMDISPOSITIVOS = r'fimdispositivos'
     DEF             = r'def'
@@ -35,17 +34,17 @@ class ObsLexer(Lexer):
     LIGAR           = r'ligar'
     DESLIGAR        = r'desligar'
 
-    # ----------------------------------------------------------------------
-    # operadores e símbolos
-    # ----------------------------------------------------------------------
+    # ---------------------------------------------------------
+    # OPERADORES E SÍMBOLOS
+    # ---------------------------------------------------------
     OP_LOGIC = r'(>=|<=|==|!=|>|<)'
     SETA     = r'->'
 
     literals = { '[', ']', ':', ';', ',', '(', ')' }
 
-    # ----------------------------------------------------------------------
-    # valores básicos
-    # ----------------------------------------------------------------------
+    # ---------------------------------------------------------
+    # VALORES
+    # ---------------------------------------------------------
     @_(r'True|False')
     def BOOL(self, t):
         t.value = (t.value == "True")
@@ -61,24 +60,23 @@ class ObsLexer(Lexer):
         t.value = t.value.strip('"')
         return t
 
-    # ----------------------------------------------------------------------
-    # identificadores
-    # ----------------------------------------------------------------------
-    # id_obs: letras, números e underline
+    # ---------------------------------------------------------
+    # IDENTIFICADORES — ORDEM IMPORTA!
+    # ---------------------------------------------------------
+
+    # MAIS GERAL → vem ANTES
     @_(r'[A-Za-z][A-Za-z0-9_]*')
     def ID_OBS(self, t):
-        # palavras reservadas já foram tratadas acima automaticamente
         return t
 
-    # id_device: somente letras
+    # MAIS RESTRITIVO → vem DEPOIS
     @_(r'[A-Za-z]+')
     def ID_DEVICE(self, t):
-        # palavras reservadas já foram tratadas acima automaticamente
         return t
 
-    # ----------------------------------------------------------------------
-    # erro léxico
-    # ----------------------------------------------------------------------
+    # ---------------------------------------------------------
+    # ERRO LÉXICO
+    # ---------------------------------------------------------
     def error(self, t):
         print(f"caractere ilegal: '{t.value[0]}'")
         self.index += 1
